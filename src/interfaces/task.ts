@@ -15,6 +15,8 @@ export type ViewMode = 'board' | 'list'
 /** Tek bir görevi temsil eder. */
 export interface Task {
   id: string
+  /** Görevin bağlı olduğu projenin kimliği. */
+  projectId: string
   title: string
   /** Serbest metin açıklama. Boş bırakılabilir. */
   description: string
