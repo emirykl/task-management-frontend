@@ -26,5 +26,9 @@ dist-ssr
 # Netlify
 .netlify
 
+# Vercel
+.vercel
+
 # Proje yönergesi dokümanı depoya girmesin
 *.pdf
+.env*
