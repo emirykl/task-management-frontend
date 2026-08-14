@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import {
-  DIFFICULTY_WEIGHT,
-  type Task,
-  type TaskDifficulty,
-  type TaskPatch,
-  type TaskStats,
-  type TaskStatus,
-  type ViewMode,
+import type {
+  Task,
+  TaskDifficulty,
+  TaskPatch,
+  TaskStats,
+  TaskStatus,
+  ViewMode,
 } from '../interfaces/task'
 import { createSampleTasks } from '../lib/sampleTasks'
 import { loadTasks, saveTasks } from '../lib/storage'
+import { DIFFICULTY_WEIGHT } from '../lib/taskMeta'
 
 /** Benzersiz kimlik üretir. crypto.randomUUID desteklenmeyen tarayıcılar için yedeği vardır. */
 function createId(): string {

@@ -1,4 +1,5 @@
-import { DIFFICULTY_LABELS, DIFFICULTY_ORDER, type TaskDifficulty } from '../interfaces/task'
+import type { TaskDifficulty } from '../interfaces/task'
+import { DIFFICULTY_LABELS, DIFFICULTY_ORDER } from '../lib/taskMeta'
 
 interface DifficultySelectProps {
   value: TaskDifficulty

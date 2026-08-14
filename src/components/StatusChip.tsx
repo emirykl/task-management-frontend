@@ -1,4 +1,5 @@
-import { STATUS_LABELS, type TaskStatus } from '../interfaces/task'
+import type { TaskStatus } from '../interfaces/task'
+import { STATUS_LABELS } from '../lib/taskMeta'
 
 interface StatusChipProps {
   status: TaskStatus

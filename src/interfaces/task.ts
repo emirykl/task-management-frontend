@@ -1,5 +1,6 @@
 /**
  * Uygulama genelinde kullanılan tip tanımları.
+ * Ekranda görünen etiketler ve sıralama bilgisi için `lib/taskMeta` dosyasına bakılır.
  */
 
 /** Bir görevin panodaki sütunu. */
@@ -38,29 +39,4 @@ export interface TaskStats {
   todo: number
   progress: number
   done: number
-}
-
-/** Sütunların soldan sağa sırası. */
-export const STATUS_ORDER: TaskStatus[] = ['todo', 'progress', 'done']
-
-export const STATUS_LABELS: Record<TaskStatus, string> = {
-  todo: 'Yapılacak',
-  progress: 'Devam ediyor',
-  done: 'Bitti',
-}
-
-/** Zorluk seçeneklerinin kolaydan zora sırası. */
-export const DIFFICULTY_ORDER: TaskDifficulty[] = ['easy', 'medium', 'hard']
-
-export const DIFFICULTY_LABELS: Record<TaskDifficulty, string> = {
-  easy: 'Basit',
-  medium: 'Orta',
-  hard: 'Zor',
-}
-
-/** Sıralamada zor görevler üste çıksın diye kullanılan ağırlıklar. */
-export const DIFFICULTY_WEIGHT: Record<TaskDifficulty, number> = {
-  hard: 0,
-  medium: 1,
-  easy: 2,
 }

@@ -1,4 +1,5 @@
-import { DIFFICULTY_LABELS, type TaskDifficulty } from '../interfaces/task'
+import type { TaskDifficulty } from '../interfaces/task'
+import { DIFFICULTY_LABELS } from '../lib/taskMeta'
 
 interface DifficultyBadgeProps {
   difficulty: TaskDifficulty
