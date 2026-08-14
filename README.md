@@ -1,10 +1,10 @@
-# Görevler — Kanban Görev Yönetim Panosu
+# TaskManager
 
-React, TypeScript ve Tailwind CSS ile geliştirilmiş bir görev yönetim uygulaması.
-Görevler zorluk derecesi alır, üç sütunlu bir pano üzerinde sürüklenerek durumları
-değişir ve hepsi tarayıcının `LocalStorage`'ında saklanır. Arka uç gerektirmez.
+React, TypeScript ve Tailwind CSS ile geliştirilmiş bir görev yönetim panosu. Görevler
+zorluk derecesi alır, üç sütunlu bir pano üzerinde sürüklenerek durumları değişir ve
+hepsi tarayıcının `LocalStorage`'ında saklanır. Arka uç gerektirmez.
 
-**Canlı demo:** _(Netlify linki buraya eklenecek)_
+**Canlı demo:** https://taskmanager-dusky-one.vercel.app
 
 ## Özellikler
 
@@ -17,28 +17,31 @@ değişir ve hepsi tarayıcının `LocalStorage`'ında saklanır. Arka uç gerek
 
 Ek olarak:
 
-- **Kanban panosu** — Yapılacak, Devam ediyor ve Bitti sütunları, her birinde canlı sayaç
+- **Kanban panosu** — Yapılacak, Devam ediyor ve Bitti sütunları, her birinde renkli
+  etiket ve canlı sayaç
 - **Sürükle bırak** — kartlar sütunlar arasında sürüklenerek taşınır, hedef sütun
   vurgulanır. Sürükleme kullanamayanlar için karttaki ok butonları aynı işi yapar
 - **Zorluk derecesi** — Basit, Orta, Zor. Renkli noktayla gösterilir, sütunlarda zor
   görevler üste çıkar
 - **Açıklama** — her göreve isteğe bağlı serbest metin, kartta başlığın altında görünür
-- **Örnek veri** — panoyu denemek için hazır Türkçe görev listesini tek tuşla yükleme.
-  Aynı buton yüklendikten sonra silmeye dönüşür ve yalnızca örnek kayıtları kaldırır,
-  kullanıcının kendi eklediği görevlere dokunmaz
-- **Kalıcılık** — her değişiklik `LocalStorage`'a yazılır, sayfa yenilendiğinde korunur
+- **Örnek veri** — panoyu denemek için hazır listeyi tek tuşla yükleme. Aynı buton
+  yüklendikten sonra silmeye dönüşür ve yalnızca örnek kayıtları kaldırır, kullanıcının
+  kendi eklediği görevlere dokunmaz
+- **Kalıcılık** — her değişiklik `LocalStorage`'a yazılır, sayfa yenilendiğinde korunur.
+  Okuma sırasında bozuk kayıtlar elenir, eski şemadan gelen veriler dönüştürülür
 - **İlerleme** — biten görevlerin oranı başlıkta ince bir çubukla gösterilir
 - Mobil, tablet ve geniş ekran için duyarlı (responsive) yerleşim
-- Klavye desteği: `Esc` ile paneli kapatma ve düzenlemeden çıkma
+- Klavye desteği: `Enter` ile kaydetme, `Esc` ile vazgeçme
 - Erişilebilirlik: `aria` etiketleri, görünür odak halkaları, ekran okuyucu etiketleri
+- Beklenmeyen bir render hatasında boş sayfa yerine anlaşılır bir uyarı ekranı
 
 ## Tasarım
 
 Arayüz Apple'ın sistem arayüzlerine yakın bir dil kullanır. Zeminde yumuşak renk
 geçişleri vardır; paneller, kartlar ve butonlar `backdrop-filter` ile arkalarını
 bulanıklaştıran cam yüzeylerdir. Butonlarda üst kenar parlaması, yumuşak dış gölge ve
-basıldığında içeri gömülme hareketi bulunur. Tipografi SF Pro sistem yazı tipine
-dayanır, Inter yedek olarak yüklenir.
+basıldığında içeri gömülme hareketi bulunur. Tipografi SF Pro sistem yazı tipine dayanır,
+Inter yedek olarak yüklenir.
 
 ## Kullanılan Teknolojiler
 
@@ -46,6 +49,7 @@ dayanır, Inter yedek olarak yüklenir.
 - **TypeScript** — tip güvenliği (`src/interfaces` altında tip tanımları)
 - **Vite** — geliştirme sunucusu ve derleme aracı
 - **Tailwind CSS 4** — stil
+- **Vitest** — birim testleri
 - **LocalStorage** — kalıcı veri saklama
 
 ## Proje Yapısı
@@ -56,24 +60,36 @@ src/
 │   ├── TaskForm.tsx         # Açılır görev ekleme paneli
 │   ├── BoardView.tsx        # Kanban sütunları ve bırakma alanları
 │   ├── ListView.tsx         # Tek parça liste görünümü
-│   ├── TaskCard.tsx         # Görev kartı (taşı / düzenle / sil)
+│   ├── TaskCard.tsx         # Görev kartının okuma hali
+│   ├── TaskCardEditor.tsx   # Görev kartının düzenleme formu
 │   ├── DifficultyBadge.tsx  # Zorluk göstergesi
 │   ├── DifficultySelect.tsx # Basit, Orta, Zor seçimi
+│   ├── StatusChip.tsx       # Renkli durum etiketi
+│   ├── IconButton.tsx       # Kart üzerindeki ikon butonu
 │   ├── Toolbar.tsx          # Görünüm değiştirici ve toplu işlemler
-│   └── EmptyState.tsx       # Liste boşken gösterilen alan
+│   ├── EmptyState.tsx       # Görev bulunmayan alanlarda gösterilen kutu
+│   └── ErrorBoundary.tsx    # Render hatalarını yakalayan sarmalayıcı
 ├── pages/
 │   └── HomePage.tsx         # Ana sayfa
 ├── interfaces/
 │   └── task.ts              # Task, TaskStatus, TaskDifficulty, TaskStats tipleri
 ├── hooks/
-│   └── useTasks.ts          # Durum yönetimi ve görev işlemleri
+│   ├── useTasks.ts          # Durum yönetimi ve görev işlemleri
+│   └── useTasks.test.ts
 ├── lib/
 │   ├── storage.ts           # LocalStorage okuma / yazma katmanı
-│   └── sampleTasks.ts       # Hazır örnek görev listesi
+│   ├── storage.test.ts
+│   ├── sampleTasks.ts       # Hazır örnek görev listesi
+│   ├── sampleTasks.test.ts
+│   └── taskMeta.ts          # Etiketler, sıralama ve zorluk ağırlıkları
 ├── App.tsx
 ├── main.tsx
 └── index.css
 ```
+
+Tip tanımları `interfaces`, saf yardımcılar `lib`, durum yönetimi `hooks`, arayüz
+`components` ve `pages` altında durur. Bağımlılık tek yönlüdür: bileşenler doğrudan
+`LocalStorage`'a dokunmaz, her şey `useTasks` üzerinden geçer.
 
 ## Kurulum
 
@@ -86,6 +102,9 @@ npm install
 # Geliştirme sunucusunu başlat (http://localhost:5173)
 npm run dev
 
+# Testleri çalıştır
+npm run test
+
 # Üretim derlemesi al
 npm run build
 
@@ -93,19 +112,24 @@ npm run build
 npm run preview
 ```
 
-## Yayına Alma (Netlify)
+Diğer komutlar: `npm run lint` kod denetimi yapar, `npm run format` dosyaları Prettier
+ile biçimlendirir.
 
-Depo Netlify'a bağlandığında `netlify.toml` dosyası ayarları otomatik uygular:
+## Testler
 
-- **Build command:** `npm run build`
-- **Publish directory:** `dist`
+Vitest ve jsdom ile 30 birim testi bulunur:
 
-Alternatif olarak Netlify CLI ile:
+- `storage.test.ts` — bozuk JSON, eksik alan ve eski şema kayıtlarına karşı davranış
+- `sampleTasks.test.ts` — örnek verinin işaretlenmesi, benzersizliği ve dağılımı
+- `useTasks.test.ts` — ekleme, güncelleme, taşıma, silme, sıralama ve kalıcılık
 
-```bash
-npm run build
-npx netlify-cli deploy --prod --dir=dist
-```
+## Yayına Alma
+
+Proje Vercel üzerinde yayınlanmıştır. Depo Vercel'e bağlandığında çerçeve **Vite**
+olarak otomatik tanınır; derleme komutu `npm run build`, çıktı klasörü `dist` olarak
+kendiliğinden ayarlanır, ek yapılandırma gerekmez.
+
+`main` dalına yapılan her gönderim yeni bir yayın tetikler.
 
 ## Lisans
 
