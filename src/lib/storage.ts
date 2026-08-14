@@ -1,6 +1,11 @@
+import type { BoardState, Project } from '../interfaces/project'
 import type { Task, TaskDifficulty, TaskStatus } from '../interfaces/task'
+import { createId } from './createId'
 
-const STORAGE_KEY = 'gorev-panosu:tasks'
+const BOARD_KEY = 'panolo:board'
+
+/** Projeler eklenmeden önce kullanılan, yalnızca görev listesi tutan anahtar. */
+const LEGACY_TASKS_KEY = 'gorev-panosu:tasks'
 
 const STATUSES: TaskStatus[] = ['todo', 'progress', 'done']
 const DIFFICULTIES: TaskDifficulty[] = ['easy', 'medium', 'hard']
@@ -10,6 +15,24 @@ const LEGACY_PRIORITY_MAP: Record<string, TaskDifficulty> = {
   high: 'hard',
   medium: 'medium',
   low: 'easy',
+}
+
+const EMPTY_BOARD: BoardState = { projects: [], tasks: [], activeProjectId: null }
+
+/** Kayıttaki bir projeyi doğrular. */
+function normalizeProject(value: unknown): Project | null {
+  if (typeof value !== 'object' || value === null) return null
+  const raw = value as Record<string, unknown>
+
+  if (typeof raw.id !== 'string' || !raw.id) return null
+  if (typeof raw.name !== 'string' || !raw.name.trim()) return null
+
+  return {
+    id: raw.id,
+    name: raw.name.trim(),
+    createdAt:
+      typeof raw.createdAt === 'string' ? raw.createdAt : new Date().toISOString(),
+  }
 }
 
 /**
@@ -34,6 +57,7 @@ function normalizeTask(value: unknown): Task | null {
 
   return {
     id: raw.id,
+    projectId: typeof raw.projectId === 'string' ? raw.projectId : '',
     title: raw.title,
     description: typeof raw.description === 'string' ? raw.description : '',
     status: raw.status as TaskStatus,
@@ -43,33 +67,93 @@ function normalizeTask(value: unknown): Task | null {
   }
 }
 
-/**
- * LocalStorage'daki görevleri okur.
- * Kayıt yoksa veya veri bozuksa boş liste döner; uygulama asla çökmez.
- */
-export function loadTasks(): Task[] {
+/** Depodan okunan ham metni ayrıştırır, hata durumunda null döner. */
+function parse(raw: string | null): unknown {
+  if (!raw) return null
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-
-    const parsed: unknown = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
-
-    return parsed
-      .map(normalizeTask)
-      .filter((task): task is Task => task !== null)
+    return JSON.parse(raw)
   } catch {
-    return []
+    return null
   }
 }
 
 /**
- * Görevleri LocalStorage'a yazar.
+ * Projesi bulunmayan görevleri ilk projeye bağlar ve aktif projeyi doğrular.
+ * Hiç proje yoksa görevler de temizlenir.
+ */
+function reconcile(projects: Project[], tasks: Task[], activeId: unknown): BoardState {
+  if (projects.length === 0) return EMPTY_BOARD
+
+  const known = new Set(projects.map((project) => project.id))
+  const fallbackId = projects[0].id
+
+  const attached = tasks.map((task) =>
+    known.has(task.projectId) ? task : { ...task, projectId: fallbackId },
+  )
+
+  const activeProjectId =
+    typeof activeId === 'string' && known.has(activeId) ? activeId : fallbackId
+
+  return { projects, tasks: attached, activeProjectId }
+}
+
+/** Projeler eklenmeden önce kaydedilmiş görevleri varsayılan bir projeye taşır. */
+function migrateLegacyTasks(): BoardState {
+  const parsed = parse(window.localStorage.getItem(LEGACY_TASKS_KEY))
+  if (!Array.isArray(parsed)) return EMPTY_BOARD
+
+  const tasks = parsed
+    .map(normalizeTask)
+    .filter((task): task is Task => task !== null)
+
+  if (tasks.length === 0) return EMPTY_BOARD
+
+  const project: Project = {
+    id: createId(),
+    name: 'Genel',
+    createdAt: new Date().toISOString(),
+  }
+
+  return reconcile([project], tasks, project.id)
+}
+
+/**
+ * Tarayıcıdaki uygulama durumunu okur.
+ * Kayıt yoksa eski biçimdeki görevler aranır, o da yoksa boş bir pano döner.
+ */
+export function loadBoard(): BoardState {
+  try {
+    const parsed = parse(window.localStorage.getItem(BOARD_KEY))
+
+    if (typeof parsed !== 'object' || parsed === null) {
+      return migrateLegacyTasks()
+    }
+
+    const raw = parsed as Record<string, unknown>
+    const projects = Array.isArray(raw.projects)
+      ? raw.projects
+          .map(normalizeProject)
+          .filter((project): project is Project => project !== null)
+      : []
+    const tasks = Array.isArray(raw.tasks)
+      ? raw.tasks.map(normalizeTask).filter((task): task is Task => task !== null)
+      : []
+
+    if (projects.length === 0) return migrateLegacyTasks()
+
+    return reconcile(projects, tasks, raw.activeProjectId)
+  } catch {
+    return EMPTY_BOARD
+  }
+}
+
+/**
+ * Uygulama durumunu tarayıcıya yazar.
  * Kota dolduğunda veya gizli sekmede erişim engellendiğinde sessizce geçilir.
  */
-export function saveTasks(tasks: Task[]): void {
+export function saveBoard(state: BoardState): void {
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks))
+    window.localStorage.setItem(BOARD_KEY, JSON.stringify(state))
   } catch {
     // Depolama kullanılamıyor: veri kalıcı olmaz ama uygulama çalışmaya devam eder.
   }

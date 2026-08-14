@@ -76,12 +76,13 @@ const SEEDS: SampleSeed[] = [
   },
 ]
 
-/** Panoyu denemek için hazır Türkçe görev listesi üretir. */
-export function createSampleTasks(): Task[] {
+/** Verilen projeyi denemek için hazır Türkçe görev listesi üretir. */
+export function createSampleTasks(projectId: string): Task[] {
   const now = Date.now()
 
   return SEEDS.map((seed, index) => ({
     id: `ornek-${index}-${now}`,
+    projectId,
     title: seed.title,
     description: seed.description,
     status: seed.status,
