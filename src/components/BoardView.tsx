@@ -1,10 +1,7 @@
 import { useState, type DragEvent } from 'react'
-import {
-  STATUS_ORDER,
-  type Task,
-  type TaskPatch,
-  type TaskStatus,
-} from '../interfaces/task'
+import type { Task, TaskPatch, TaskStatus } from '../interfaces/task'
+import { STATUS_EMPTY_HINTS, STATUS_ORDER } from '../lib/taskMeta'
+import EmptyState from './EmptyState'
 import StatusChip from './StatusChip'
 import TaskCard from './TaskCard'
 
@@ -45,7 +42,14 @@ export default function BoardView({
               event.preventDefault()
               setHoveredColumn(status)
             }}
-            onDragLeave={() => setHoveredColumn(null)}
+            onDragLeave={(event) => {
+              // Sütunun içindeki bir karta geçerken vurgunun sönmemesi için
+              // yalnızca imleç gerçekten sütunun dışına çıktığında temizlenir.
+              const nextTarget = event.relatedTarget as Node | null
+              if (!nextTarget || !event.currentTarget.contains(nextTarget)) {
+                setHoveredColumn(null)
+              }
+            }}
             onDrop={(event) => handleDrop(event, status)}
             className={`flex flex-col px-4 py-5 transition duration-200 md:first:pl-0 md:last:pr-0 ${
               isHovered ? 'bg-accent/10' : ''
@@ -56,16 +60,20 @@ export default function BoardView({
             </h2>
 
             <div className="flex min-h-32 flex-1 flex-col gap-3">
-              {columnTasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  variant="board"
-                  onMove={onMove}
-                  onUpdate={onUpdate}
-                  onDelete={onDelete}
-                />
-              ))}
+              {columnTasks.length === 0 ? (
+                <EmptyState message={STATUS_EMPTY_HINTS[status]} size="sm" />
+              ) : (
+                columnTasks.map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    variant="board"
+                    onMove={onMove}
+                    onUpdate={onUpdate}
+                    onDelete={onDelete}
+                  />
+                ))
+              )}
             </div>
           </section>
         )
