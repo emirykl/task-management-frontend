@@ -1,0 +1,10 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# Tek sayfalık uygulama (SPA) yönlendirmesi:
+# Bilinmeyen tüm yollar index.html'e düşer ki doğrudan URL ile girişte 404 alınmasın.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
