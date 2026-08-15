@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import BrandMark from './BrandMark'
 
 interface ProjectOnboardingProps {
   onCreate: (name: string) => void
@@ -25,8 +26,8 @@ export default function ProjectOnboarding({ onCreate }: ProjectOnboardingProps) 
   return (
     <div className="flex min-h-screen items-center justify-center px-4 py-10">
       <div className="glass-panel w-full max-w-md rounded-panel p-8 sm:p-10">
-        <p className="text-sm font-medium text-muted">Panolo</p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">
+        <BrandMark />
+        <h1 className="mt-6 text-3xl font-semibold tracking-tight">
           İlk projeni oluştur
         </h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted">
