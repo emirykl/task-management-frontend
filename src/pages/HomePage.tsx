@@ -1,7 +1,9 @@
 import BoardView from '../components/BoardView'
+import BrandMark from '../components/BrandMark'
 import ListView from '../components/ListView'
 import ProjectMenu from '../components/ProjectMenu'
 import ProjectOnboarding from '../components/ProjectOnboarding'
+import ProjectSettingsMenu from '../components/ProjectSettingsMenu'
 import TaskForm from '../components/TaskForm'
 import Toolbar from '../components/Toolbar'
 import { useBoard } from '../hooks/useBoard'
@@ -40,22 +42,27 @@ export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col px-4 py-8 sm:px-8 sm:py-12 xl:px-12">
       <main className="mx-auto flex w-full max-w-[1600px] flex-1 flex-col">
-        <header className="mb-6 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 sm:mb-8">
-          <div>
-            <p className="px-1 text-sm font-medium text-muted">Panolo</p>
+        <header className="mb-6 sm:mb-8">
+          <div className="mb-5 flex items-center justify-between gap-4">
+            <BrandMark />
+            <ProjectSettingsMenu
+              project={activeProject}
+              onRename={renameProject}
+              onDelete={deleteProject}
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
             <ProjectMenu
               projects={projects}
               activeProject={activeProject}
               taskCountByProject={taskCountByProject}
               onSelect={selectProject}
               onCreate={addProject}
-              onRename={renameProject}
-              onDelete={deleteProject}
             />
-          </div>
 
-          {stats.total > 0 && (
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-1">
+            {stats.total > 0 && (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <span className="text-sm text-muted tabular-nums">
                 {stats.done} / {stats.total} iş tamamlandı
               </span>
@@ -70,9 +77,10 @@ export default function HomePage() {
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <span className="text-sm font-medium tabular-nums">%{progress}</span>
-            </div>
-          )}
+                <span className="text-sm font-medium tabular-nums">%{progress}</span>
+              </div>
+            )}
+          </div>
         </header>
 
         <section className="glass-panel flex flex-1 flex-col rounded-panel p-5 sm:p-7 lg:p-9">
