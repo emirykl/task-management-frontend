@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react'
+import { useDismissable } from '../hooks/useDismissable'
 import type { Project } from '../interfaces/project'
 
 interface ProjectMenuProps {
@@ -7,77 +8,39 @@ interface ProjectMenuProps {
   taskCountByProject: Record<string, number>
   onSelect: (id: string) => void
   onCreate: (name: string) => void
-  onRename: (id: string, name: string) => void
-  onDelete: (id: string) => void
 }
 
-type MenuMode = 'list' | 'create' | 'rename' | 'confirmDelete'
-
-/** Başlıktaki proje seçici. Proje ekleme, yeniden adlandırma ve silme buradan yapılır. */
+/** Başlıktaki proje seçici. Projeler arasında geçiş ve yeni proje açma buradan yapılır. */
 export default function ProjectMenu({
   projects,
   activeProject,
   taskCountByProject,
   onSelect,
   onCreate,
-  onRename,
-  onDelete,
 }: ProjectMenuProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [mode, setMode] = useState<MenuMode>('list')
+  const [isCreating, setIsCreating] = useState(false)
   const [draft, setDraft] = useState('')
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  function close() {
+  const close = useCallback(() => {
     setIsOpen(false)
-    setMode('list')
+    setIsCreating(false)
     setDraft('')
-  }
+  }, [])
+
+  useDismissable(isOpen, containerRef, close)
 
   useEffect(() => {
-    if (!isOpen) return
-
-    function handlePointerDown(event: PointerEvent) {
-      if (!containerRef.current?.contains(event.target as Node)) close()
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') close()
-    }
-
-    document.addEventListener('pointerdown', handlePointerDown)
-    document.addEventListener('keydown', handleKeyDown)
-
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isOpen])
-
-  useEffect(() => {
-    if (mode === 'create' || mode === 'rename') inputRef.current?.focus()
-  }, [mode])
-
-  function startCreate() {
-    setDraft('')
-    setMode('create')
-  }
-
-  function startRename() {
-    setDraft(activeProject.name)
-    setMode('rename')
-  }
+    if (isCreating) inputRef.current?.focus()
+  }, [isCreating])
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     if (!draft.trim()) return
 
-    if (mode === 'create') {
-      onCreate(draft)
-    } else {
-      onRename(activeProject.id, draft)
-    }
+    onCreate(draft)
     close()
   }
 
@@ -88,7 +51,7 @@ export default function ProjectMenu({
         onClick={() => (isOpen ? close() : setIsOpen(true))}
         aria-haspopup="menu"
         aria-expanded={isOpen}
-        className="flex items-center gap-2 rounded-xl px-1 text-3xl font-semibold tracking-tight transition hover:opacity-70 sm:text-4xl"
+        className="flex items-center gap-2 rounded-xl text-3xl font-semibold tracking-tight transition hover:opacity-70 sm:text-4xl"
       >
         {activeProject.name}
         <svg
@@ -108,8 +71,48 @@ export default function ProjectMenu({
           role="menu"
           className="glass-panel absolute top-full left-0 z-20 mt-2 w-72 rounded-2xl p-2"
         >
-          {mode === 'list' && (
+          {isCreating ? (
+            <form onSubmit={handleSubmit} className="p-1">
+              <label
+                htmlFor="new-project"
+                className="mb-1.5 block text-sm font-medium text-muted"
+              >
+                Yeni proje adı
+              </label>
+              <input
+                ref={inputRef}
+                id="new-project"
+                type="text"
+                value={draft}
+                maxLength={60}
+                autoComplete="off"
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder="Örneğin Okul"
+                className="glass-field w-full rounded-xl px-3 py-2 text-[15px] placeholder:text-faint"
+              />
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="submit"
+                  disabled={!draft.trim()}
+                  className="glass-button glass-button-accent rounded-full px-4 py-1.5 text-xs font-medium disabled:opacity-35"
+                >
+                  Oluştur
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsCreating(false)}
+                  className="glass-button rounded-full px-4 py-1.5 text-xs font-medium text-muted"
+                >
+                  Vazgeç
+                </button>
+              </div>
+            </form>
+          ) : (
             <>
+              <p className="px-3 pt-2 pb-1 text-xs font-medium tracking-wide text-faint uppercase">
+                Projelerin
+              </p>
+
               <ul className="flex flex-col">
                 {projects.map((project) => {
                   const isActive = project.id === activeProject.id
@@ -151,94 +154,23 @@ export default function ProjectMenu({
               <button
                 type="button"
                 role="menuitem"
-                onClick={startCreate}
-                className="w-full rounded-xl px-3 py-2.5 text-left text-[15px] transition hover:bg-white/60"
+                onClick={() => {
+                  setDraft('')
+                  setIsCreating(true)
+                }}
+                className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-[15px] font-medium transition hover:bg-white/60"
               >
+                <svg
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="size-4 text-accent"
+                  aria-hidden="true"
+                >
+                  <path d="M9 3.5h2V9h5.5v2H11v5.5H9V11H3.5V9H9V3.5Z" />
+                </svg>
                 Yeni proje
               </button>
-              <button
-                type="button"
-                role="menuitem"
-                onClick={startRename}
-                className="w-full rounded-xl px-3 py-2.5 text-left text-[15px] text-muted transition hover:bg-white/60 hover:text-ink"
-              >
-                Projeyi yeniden adlandır
-              </button>
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => setMode('confirmDelete')}
-                className="w-full rounded-xl px-3 py-2.5 text-left text-[15px] text-muted transition hover:bg-high/10 hover:text-high"
-              >
-                Projeyi sil
-              </button>
             </>
-          )}
-
-          {(mode === 'create' || mode === 'rename') && (
-            <form onSubmit={handleSubmit} className="p-1">
-              <label
-                htmlFor="project-name"
-                className="mb-1.5 block text-sm font-medium text-muted"
-              >
-                {mode === 'create' ? 'Yeni proje adı' : 'Proje adı'}
-              </label>
-              <input
-                ref={inputRef}
-                id="project-name"
-                type="text"
-                value={draft}
-                maxLength={60}
-                autoComplete="off"
-                onChange={(event) => setDraft(event.target.value)}
-                placeholder="Örneğin Okul"
-                className="glass-field w-full rounded-xl px-3 py-2 text-[15px] placeholder:text-faint"
-              />
-              <div className="mt-3 flex gap-2">
-                <button
-                  type="submit"
-                  disabled={!draft.trim()}
-                  className="glass-button glass-button-accent rounded-full px-4 py-1.5 text-xs font-medium disabled:opacity-35"
-                >
-                  {mode === 'create' ? 'Oluştur' : 'Kaydet'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMode('list')}
-                  className="glass-button rounded-full px-4 py-1.5 text-xs font-medium text-muted"
-                >
-                  Vazgeç
-                </button>
-              </div>
-            </form>
-          )}
-
-          {mode === 'confirmDelete' && (
-            <div className="p-3">
-              <p className="text-sm leading-relaxed text-muted">
-                <span className="font-medium text-ink">{activeProject.name}</span> projesi
-                ve içindeki bütün görevler silinecek. Bu işlem geri alınamaz.
-              </p>
-              <div className="mt-4 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onDelete(activeProject.id)
-                    close()
-                  }}
-                  className="glass-button rounded-full bg-high/12 px-4 py-1.5 text-xs font-medium text-high"
-                >
-                  Sil
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setMode('list')}
-                  className="glass-button rounded-full px-4 py-1.5 text-xs font-medium text-muted"
-                >
-                  Vazgeç
-                </button>
-              </div>
-            </div>
           )}
         </div>
       )}
