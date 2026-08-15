@@ -5,7 +5,7 @@ Görevler projeler altında toplanır, zorluk derecesi alır ve üç sütunlu bi
 panosunda sürüklenerek durumları değişir. Bütün veri tarayıcının `LocalStorage`'ında
 saklanır, arka uç gerektirmez.
 
-**Canlı demo:** https://taskmanager-dusky-one.vercel.app
+**Canlı demo:** https://panolo.vercel.app
 
 ## Özellikler
 
