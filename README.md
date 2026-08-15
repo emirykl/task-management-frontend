@@ -19,9 +19,9 @@ saklanır, arka uç gerektirmez.
 Ek olarak:
 
 - **Projeler** — Görevler bir projeye bağlıdır. Uygulama ilk açıldığında kullanıcıdan
-  proje adı istenir, sonrasında başlıktaki menüden yeni proje açılabilir, ad
-  değiştirilebilir ve proje silinebilir. Her projenin görevleri, sayaçları ve ilerlemesi
-  birbirinden bağımsızdır
+  proje adı istenir. Sonrasında proje adının yanındaki menüden projeler arasında geçiş
+  yapılır ve yeni proje açılır; ad değiştirme ile silme sağ üstteki ayarlar menüsünde
+  durur. Her projenin görevleri, sayaçları ve ilerlemesi birbirinden bağımsızdır
 - **Kanban panosu** — Yapılacak, Devam ediyor ve Bitti sütunları, her birinde renkli
   etiket ve canlı sayaç
 - **Sürükle bırak** — kartlar sütunlar arasında sürüklenerek taşınır, hedef sütun
@@ -65,7 +65,9 @@ Panonun üç sütunlu yapısını temsil eder.
 ```
 src/
 ├── components/               # Yeniden kullanılabilir arayüz bileşenleri
-│   ├── ProjectMenu.tsx       # Başlıktaki proje seçici ve proje işlemleri
+│   ├── BrandMark.tsx         # Logo ve Panolo yazısı
+│   ├── ProjectMenu.tsx       # Proje seçici ve yeni proje açma
+│   ├── ProjectSettingsMenu.tsx # Proje adını değiştirme ve silme
 │   ├── ProjectOnboarding.tsx # İlk açılışta gösterilen karşılama ekranı
 │   ├── TaskForm.tsx          # Açılır görev ekleme paneli
 │   ├── BoardView.tsx         # Kanban sütunları ve bırakma alanları
@@ -86,7 +88,8 @@ src/
 │   └── project.ts            # Project ve BoardState tipleri
 ├── hooks/
 │   ├── useBoard.ts           # Projeler ve görevler için durum yönetimi
-│   └── useBoard.test.ts
+│   ├── useBoard.test.ts
+│   └── useDismissable.ts     # Menüleri dışarı tıklamada ve Escape ile kapatır
 ├── lib/
 │   ├── storage.ts            # LocalStorage okuma, yazma ve göç katmanı
 │   ├── storage.test.ts
