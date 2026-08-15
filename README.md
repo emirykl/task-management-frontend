@@ -48,8 +48,8 @@ bulanıklaştıran cam yüzeylerdir. Butonlarda üst kenar parlaması, yumuşak 
 basıldığında içeri gömülme hareketi bulunur. Tipografi SF Pro sistem yazı tipine dayanır,
 Inter yedek olarak yüklenir.
 
-Logo, üçe bölünmüş yuvarlatılmış bir karedir; ortadaki sütun dolu, yandakiler soluktur.
-Panonun üç sütunlu yapısını temsil eder.
+Logo, içi raflara bölünmüş bir **P** harfidir; düzenlenmiş işleri temsil eder. Marka
+yazısı gövde metninden ayrışsın diye Space Grotesk ile dizilir.
 
 ## Kullanılan Teknolojiler
 
